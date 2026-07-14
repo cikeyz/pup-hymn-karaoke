@@ -1,252 +1,336 @@
+/* === EMBEDDED LRC DATA ===
+   Embedded directly to avoid CORS/fetch issues when opening
+   via file:// protocol (double-click to open). The LRC uses
+   enhanced word-level timestamps: [line]<word>Text <word>Text */
+const LRC_DATA = `[00:12.60]<00:12.60>Sintang <00:14.20>Paaralan
+[00:15.65]<00:15.65>Tanglaw <00:16.48>ka <00:16.88>ng <00:17.38>bayan
+[00:18.52]<00:18.52>Pandayan <00:20.10>ng <00:20.65>isip <00:21.80>ng <00:22.25>kabataan
+[00:24.30]<00:24.30>Kami <00:25.10>ay <00:25.55>dumating <00:26.78>nang <00:27.42>salat <00:28.00>sa <00:28.45>yaman
+[00:30.00]<00:30.00>Hanap <00:31.00>na <00:31.45>dunong <00:32.70>ay <00:33.25>iyong <00:34.20>alay
+[00:35.85]<00:35.85>Ang <00:36.50>layunin <00:38.00>mong <00:38.70>makatao
+[00:41.25]<00:41.25>Dinarangal <00:43.70>ang <00:44.70>Pilipino
+[00:48.05]<00:48.05>Ang <00:48.50>iyong <00:49.00>aral, <00:50.00>diwa, <00:51.50>adhikang <00:52.50>taglay
+[00:54.00]<00:54.00>PUP, <00:55.20>aming <00:56.00>gabay
+[00:57.00]<00:57.00>Paaralang <00:59.00>dakila
+[01:02.85]<01:02.85>PUP, <01:04.20>pinagpala
+[01:09.10]<01:09.10>Gagamitin <01:10.50>ang <01:11.20>karunungan
+[01:14.00]<01:14.00>Mula <01:14.60>sa <01:15.10>iyo, <01:16.20>para <01:17.50>sa <01:18.00>bayan
+[01:21.05]<01:21.05>Ang <01:21.50>iyong <01:22.00>aral, <01:23.00>diwa, <01:24.50>adhikang <01:25.50>taglay
+[01:27.00]<01:27.00>PUP, <01:28.20>aming <01:29.00>gabay
+[01:30.00]<01:30.00>Paaralang <01:32.00>dakila
+[01:36.00]<01:36.00>PUP, <01:37.20>pinagpala`
 
+/* === DOM REFERENCES === */
+const audio = document.getElementById('audio')               // <audio> element
+const playBtn = document.getElementById('playBtn')            // play/pause button
+const iconPlay = document.getElementById('iconPlay')          // play SVG icon
+const iconPause = document.getElementById('iconPause')        // pause SVG icon
+const lyricsPanel = document.getElementById('lyricsPanel')    // scrollable lyrics container
+const progressContainer = document.getElementById('progressContainer') // seekable bar
+const progressFill = document.getElementById('progressFill')  // filled portion
+const progressThumb = document.getElementById('progressThumb') // draggable thumb
+const timeCurrent = document.getElementById('timeCurrent')    // current time label
+const timeTotal = document.getElementById('timeTotal')        // total duration label
 
-const LRC_DATA = `[00:00.00]<00:00.00>♪ Instrumental ♪
-[00:12.67]<00:12.67>Sintang <00:13.73>Paaralan
-[00:15.32]<00:15.32>Tanglaw <00:15.89>ka <00:16.45>ng <00:17.14>bayan
-[00:18.69]<00:18.69>Pandayan <00:19.85>ng <00:20.35>isip <00:21.84>ng <00:22.45>kabataan
-[00:24.46]<00:24.46>Kami <00:25.14>ay <00:25.43>dumating <00:26.54>nang <00:26.96>salat <00:28.16>sa <00:28.52>yaman
-[00:29.88]<00:29.88>Hanap <00:30.10>na <00:30.55>dunong <00:32.48>ay <00:33.18>iyong <00:33.48>alay
-[00:36.00]<00:36.00>Ang <00:36.20>layunin <00:38.25>mong <00:39.11>makatao
-[00:41.87]<00:41.87>Dinarangal <00:44.16>ang <00:44.75>Pilipino
-[00:47.88]<00:47.88>Ang <00:48.13>iyong <00:48.53>aral, <00:49.77>diwa, <00:50.91>adhikang <00:52.41>taglay
-[00:53.30]<00:53.30>PUP, <00:54.67>aming <00:55.57>gabay
-[00:56.51]<00:56.51>Paaralang <00:58.98>dakila
-[01:02.13]<01:02.13>PUP, <01:04.25>pinagpala
-[01:08.64]<01:08.64>Gagamitin <01:11.06>ang <01:12.05>karunungan
-[01:14.34]<01:14.34>Mula <01:15.01>sa <01:15.48>iyo, <01:17.30>para <01:18.17>sa <01:18.57>bayan
-[01:20.57]<01:20.57>Ang <01:21.10>iyong <01:21.17>aral, <01:22.57>diwa, <01:24.12>adhikang <01:25.40>taglay
-[01:25.99]<01:25.99>PUP, <01:27.32>aming <01:28.47>gabay
-[01:29.23]<01:29.23>Paaralang <01:32.18>dakila
-[01:34.90]<01:34.90>PUP, <01:37.85>pinagpala`;
+/* === APPLICATION STATE === */
+let lyricsData = []       // parsed line objects from LRC
+let allWords = []         // flat array of every word object (for sync search)
+let wordElements = []     // corresponding <span> DOM elements
+let activeWordIdx = -1    // index of currently highlighted word
+let activeLineIdx = -1    // index of currently highlighted line
+let isDragging = false    // true when user is dragging the progress bar
 
-const audio = document.getElementById("audio");
-const playBtn = document.getElementById("playBtn");
-const rewindBtn = document.getElementById("rewind-btn");
-const forwardBtn = document.getElementById("forward-btn");
-const iconPlay = document.getElementById("iconPlay");
-const iconPause = document.getElementById("iconPause");
-const lyricsPanel = document.getElementById("lyricsPanel");
-const progressContainer = document.getElementById("progressContainer");
-const progressFill = document.getElementById("progressFill");
-const timeCurrent = document.getElementById("timeCurrent");
-const timeTotal = document.getElementById("timeTotal");
-
-var allWords = []; // Flat array of every word: [{text, time, lineIdx}, ...]
-var wordElements = []; // Parallel array of <span> DOM elements for each word
-var activeWordIdx = -1; // Index of the currently highlighted word (-1 = none)
-var activeLineIdx = -1; // Index of the currently active line (-1 = none)
-var isUserScrolling = false; // True when user manually scrolled lyrics (pauses auto-scroll)
-var scrollResumeTimer = null; // setTimeout ID for resuming auto-scroll after 4s
-
+/* === LRC PARSER ===
+   Parses enhanced LRC format with word-level timestamps.
+   Each line: [MM:SS.XX]<MM:SS.XX>Word1 <MM:SS.XX>Word2 ...
+   Returns array of { time, words: [{ text, time }] } objects. */
 function parseLRC(text) {
-  var lines = text.trim().split("\n");
-  var result = [];
+    const lines = text.trim().split('\n')  // split by newline
+    const result = []
 
-  lines.forEach(function (line) {
-    var lineMatch = line.match(/^\[(\d+):(\d+\.\d+)\]/);
-    if (!lineMatch) return;
-    var lineTime = parseInt(lineMatch[1]) * 60 + parseFloat(lineMatch[2]);
+    lines.forEach(function (line) {
+        // Extract line-level timestamp [MM:SS.XX]
+        const lineMatch = line.match(/^\[(\d+):(\d+\.\d+)\]/)
+        if (!lineMatch) return                 // skip lines without timestamp
 
-    var wordRegex = /<(\d+):(\d+\.\d+)>([^<\[]*)/g;
-    var words = [];
-    var m;
-    while ((m = wordRegex.exec(line)) !== null) {
-      var time = parseInt(m[1]) * 60 + parseFloat(m[2]);
-      var wordText = m[3].trim();
-      if (wordText) words.push({ text: wordText, time: time });
-    }
+        // Convert MM:SS.XX to total seconds
+        const lineTime = parseInt(lineMatch[1]) * 60 + parseFloat(lineMatch[2])
 
-    if (words.length > 0) {
-      var lineText = words
-        .map(function (w) {
-          return w.text;
-        })
-        .join(" ");
-      var hasInstrumentalMarker =
-        lineText.indexOf("Instrumental") >= 0 || lineText.indexOf("♪") >= 0;
-      result.push({
-        time: lineTime,
-        words: words,
-        isInstrumental: hasInstrumentalMarker,
-      });
-    }
-  });
+        // Extract each word with its timestamp: <MM:SS.XX>WordText
+        const wordRegex = /<(\d+):(\d+\.\d+)>([^<\[]*)/g
+        const words = []
+        let m
 
-  return result;
+        while ((m = wordRegex.exec(line)) !== null) {
+            const time = parseInt(m[1]) * 60 + parseFloat(m[2]) // word timestamp in seconds
+            const wordText = m[3].trim()         // word text without extra spaces
+            if (wordText) words.push({ text: wordText, time: time })
+        }
+
+        // Only add lines that have at least one word
+        if (words.length > 0) {
+            result.push({ time: lineTime, words: words })
+        }
+    })
+
+    return result
 }
 
+/* === LYRICS RENDERER ===
+   Creates DOM elements for each lyric line and word.
+   Adds spacers at top/bottom so first/last lines can center-scroll. */
 function renderLyrics(data) {
-  lyricsPanel.innerHTML = "";
-  allWords = [];
-  wordElements = [];
+    lyricsPanel.innerHTML = ''               // clear placeholder content
+    allWords = []                            // reset flat word list
+    wordElements = []                        // reset DOM element list
 
-  // Small helper for the top/bottom spacer blocks used in centering
-  function addSpacer() {
-    var s = document.createElement("div");
-    s.className = "lyrics-spacer";
-    lyricsPanel.appendChild(s);
-  }
+    // Top spacer: pushes first line to vertical center when scrolled
+    var topSpacer = document.createElement('div')
+    topSpacer.className = 'lyrics-spacer'
+    lyricsPanel.appendChild(topSpacer)
 
-  addSpacer(); // top spacer
+    data.forEach(function (line, lineIdx) {
+        // Create container div for each lyric line
+        var lineEl = document.createElement('div')
+        lineEl.className = 'lyric-line'
+        lineEl.dataset.line = lineIdx          // store line index for reference
 
-  data.forEach(function (line, lineIdx) {
-    var lineEl = document.createElement("div");
-    lineEl.className = "lyric-line";
-    if (line.isInstrumental) lineEl.classList.add("instrumental");
+        line.words.forEach(function (word, wordIdx) {
+            word.lineIdx = lineIdx               // attach line index to word object
 
-    line.words.forEach(function (word, wordIdx) {
-      word.lineIdx = lineIdx;
-      var span = document.createElement("span");
-      span.className = "word";
-      span.textContent = word.text;
+            // Create <span> for each individual word
+            var span = document.createElement('span')
+            span.className = 'word'
+            span.textContent = word.text         // display the word text
+            span.dataset.time = word.time        // store timestamp as data attribute
 
-      // Clicking a word jumps right to that exact timestamp
-      span.addEventListener("click", function () {
-        audio.currentTime = word.time;
-        syncLyrics(word.time);
-        if (audio.paused) audio.play();
-      });
+            // Click handler: jump audio to this word's timestamp
+            span.addEventListener('click', function () {
+                audio.currentTime = word.time      // seek audio to word's time
+                syncLyrics(word.time)              // instantly update visual state
+                if (audio.paused) audio.play()     // auto-play if paused
+            })
 
-      lineEl.appendChild(span);
-      if (wordIdx < line.words.length - 1) {
-        lineEl.appendChild(document.createTextNode(" "));
-      }
+            lineEl.appendChild(span)
 
-      allWords.push(word);
-      wordElements.push(span);
-    });
+            // Add a text space between words (not after the last word)
+            if (wordIdx < line.words.length - 1) {
+                lineEl.appendChild(document.createTextNode(' '))
+            }
 
-    lyricsPanel.appendChild(lineEl);
-  });
+            allWords.push(word)                  // add to flat word array
+            wordElements.push(span)             // add to DOM element array
+        })
 
-  addSpacer(); // bottom spacer
+        // Staggered animation: each line fades in with increasing delay
+        lineEl.style.animationDelay = (lineIdx * 50) + 'ms'
+        lineEl.classList.add('loaded')          // trigger CSS animation
+
+        lyricsPanel.appendChild(lineEl)
+    })
+
+    // Bottom spacer: allows last line to scroll to vertical center
+    var bottomSpacer = document.createElement('div')
+    bottomSpacer.className = 'lyrics-spacer'
+    lyricsPanel.appendChild(bottomSpacer)
 }
 
-function scrollToLine(lineEl) {
-  if (!lineEl || isUserScrolling) return;
-  var panelHeight = lyricsPanel.clientHeight;
-  var targetScroll =
-    lineEl.offsetTop - panelHeight / 2 + lineEl.offsetHeight / 2;
-  lyricsPanel.scrollTo({ top: targetScroll, behavior: "smooth" });
-}
-
-function handleUserScroll() {
-  isUserScrolling = true;
-  if (scrollResumeTimer) clearTimeout(scrollResumeTimer);
-  scrollResumeTimer = setTimeout(function () {
-    isUserScrolling = false;
-  }, 4000);
-}
-
-lyricsPanel.addEventListener("wheel", handleUserScroll, { passive: true });
-lyricsPanel.addEventListener(
-  "touchstart",
-  function (e) {
-    if (e.target.closest(".lyrics-panel")) handleUserScroll();
-  },
-  { passive: true },
-);
-
+/* === AUDIO SYNC ENGINE ===
+   Called on every timeupdate event and after seek.
+   Finds the active word via reverse linear scan,
+   highlights it, marks sung words, and scrolls the panel. */
 function syncLyrics(currentTime) {
-  var newIdx = -1;
-  for (var i = allWords.length - 1; i >= 0; i--) {
-    if (currentTime >= allWords[i].time) {
-      newIdx = i;
-      break;
+    // Reverse scan: find the last word whose timestamp <= currentTime
+    var newWordIdx = -1
+    for (var i = allWords.length - 1; i >= 0; i--) {
+        if (currentTime >= allWords[i].time) {
+            newWordIdx = i
+            break                                // found the most recent word
+        }
     }
-  }
 
-  if (newIdx === activeWordIdx) return;
+    // If nothing changed, skip all DOM updates for performance
+    if (newWordIdx === activeWordIdx) return
 
-  if (activeWordIdx >= 0 && activeWordIdx < wordElements.length) {
-    wordElements[activeWordIdx].classList.remove("active");
-  }
+    // Remove highlight from previously active word
+    if (activeWordIdx >= 0 && activeWordIdx < wordElements.length) {
+        wordElements[activeWordIdx].classList.remove('active')
+    }
 
-  wordElements.forEach(function (el) {
-    el.classList.remove("sung");
-  });
+    // Determine which line the new active word belongs to
+    var newLineIdx = newWordIdx >= 0 ? allWords[newWordIdx].lineIdx : -1
 
-  var newLineIdx = newIdx >= 0 ? allWords[newIdx].lineIdx : -1;
-  if (newLineIdx !== activeLineIdx) {
-    var lines = lyricsPanel.querySelectorAll(".lyric-line");
-    lines.forEach(function (lineEl, idx) {
-      lineEl.classList.remove("active", "past");
-      if (idx === newLineIdx) lineEl.classList.add("active");
-      else if (idx < newLineIdx) lineEl.classList.add("past");
-    });
-    if (newLineIdx >= 0 && lines[newLineIdx]) scrollToLine(lines[newLineIdx]);
-    activeLineIdx = newLineIdx;
-  }
+    // If the line changed, update line-level styling and scroll
+    if (newLineIdx !== activeLineIdx) {
+        // Clear all "sung" markers from previous line
+        wordElements.forEach(function (el) { el.classList.remove('sung') })
 
-  for (var k = 0; k < newIdx; k++) wordElements[k].classList.add("sung");
+        // Update line classes: active, past, or default (future)
+        var lineEls = lyricsPanel.querySelectorAll('.lyric-line')
+        lineEls.forEach(function (el, idx) {
+            el.classList.remove('active', 'past')
+            if (idx === newLineIdx) el.classList.add('active')       // current line
+            else if (idx < newLineIdx) el.classList.add('past')      // already sung
+        })
 
-  if (newIdx >= 0 && newIdx < wordElements.length) {
-    wordElements[newIdx].classList.add("active");
-  }
+        // Auto-scroll the active line to the vertical center of the panel
+        if (newLineIdx >= 0 && lineEls[newLineIdx]) {
+            lineEls[newLineIdx].scrollIntoView({
+                behavior: 'smooth',               // smooth scroll animation
+                block: 'center'                    // center in viewport
+            })
+        }
 
-  activeWordIdx = newIdx;
+        activeLineIdx = newLineIdx             // update tracked line index
+    }
+
+    // Mark all words before the active word (on the same line) as "sung"
+    if (newWordIdx >= 0) {
+        // Find the global index of the first word on this line
+        var firstWordOfLine = 0
+        for (var j = 0; j < allWords.length; j++) {
+            if (allWords[j].lineIdx === newLineIdx) {
+                firstWordOfLine = j
+                break
+            }
+        }
+        // Apply "sung" class to all words between line start and active word
+        for (var k = firstWordOfLine; k < newWordIdx; k++) {
+            if (allWords[k].lineIdx === newLineIdx) {
+                wordElements[k].classList.add('sung')
+            }
+        }
+
+        // Highlight the currently active word
+        wordElements[newWordIdx].classList.add('active')
+    }
+
+    activeWordIdx = newWordIdx               // update tracked word index
 }
 
-playBtn.addEventListener("click", function () {
-  if (audio.paused) audio.play();
-  else audio.pause();
-});
-rewindBtn.addEventListener("click", function () {
-  audio.currentTime = Math.max(0, audio.currentTime - 5);
-});
-forwardBtn.addEventListener("click", function () {
-  audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 5);
-});
+/* === PLAY / PAUSE TOGGLE === */
+playBtn.addEventListener('click', function () {
+    if (audio.paused) {
+        audio.play()                           // start playback
+    } else {
+        audio.pause()                          // pause playback
+    }
+})
 
-// Swap the visible icon based on the actual audio state
-audio.addEventListener("play", function () {
-  iconPlay.style.display = "none";
-  iconPause.style.display = "block";
-});
-audio.addEventListener("pause", function () {
-  iconPlay.style.display = "block";
-  iconPause.style.display = "none";
-});
+// Swap play/pause icon when audio state changes
+audio.addEventListener('play', function () {
+    iconPlay.style.display = 'none'          // hide play icon
+    iconPause.style.display = 'block'        // show pause icon
+})
+audio.addEventListener('pause', function () {
+    iconPlay.style.display = 'block'         // show play icon
+    iconPause.style.display = 'none'         // hide pause icon
+})
 
-audio.addEventListener("timeupdate", function () {
-  progressFill.style.width =
-    ((audio.currentTime / (audio.duration || 1)) * 100).toFixed(2) + "%";
-  syncLyrics(audio.currentTime);
-  timeCurrent.textContent = formatTime(audio.currentTime);
-});
+/* === TIME UPDATE (main sync loop) ===
+   Fires ~4 times per second during playback.
+   Updates progress bar and triggers lyric sync. */
+audio.addEventListener('timeupdate', function () {
+    if (!isDragging) {                       // don't override during drag
+        var ratio = audio.currentTime / (audio.duration || 1)
+        updateProgressBar(ratio)               // update visual progress
+    }
+    syncLyrics(audio.currentTime)            // sync word highlighting
+    timeCurrent.textContent = formatTime(audio.currentTime) // update time label
+})
 
-audio.addEventListener("loadedmetadata", function () {
-  timeTotal.textContent = formatTime(audio.duration);
-});
+// Display total duration once audio metadata is loaded
+audio.addEventListener('loadedmetadata', function () {
+    timeTotal.textContent = formatTime(audio.duration)
+})
+// Fallback: some browsers resolve duration asynchronously
+audio.addEventListener('durationchange', function () {
+    timeTotal.textContent = formatTime(audio.duration)
+})
 
-progressContainer.addEventListener("click", function (e) {
-  var rect = progressContainer.getBoundingClientRect();
-  var ratio = Math.max(0, Math.min((e.clientX - rect.left) / rect.width, 1));
-  audio.currentTime = ratio * (audio.duration || 0);
-  progressFill.style.width = (ratio * 100).toFixed(2) + "%";
-  syncLyrics(audio.currentTime);
-});
+/* === PROGRESS BAR: CLICK + DRAG SEEKING ===
+   Supports both mouse and touch events.
+   Seeking instantly resyncs lyrics via syncLyrics(). */
 
-audio.addEventListener("ended", function () {
-  activeWordIdx = -1;
-  activeLineIdx = -1;
-  wordElements.forEach(function (el) {
-    el.classList.remove("active");
-    el.classList.add("sung");
-  });
-  lyricsPanel.querySelectorAll(".lyric-line").forEach(function (el) {
-    el.classList.remove("active");
-    el.classList.add("past");
-  });
-});
+// Calculate seek position from pointer X coordinate
+function seekToPosition(clientX) {
+    var rect = progressContainer.getBoundingClientRect()
+    // Clamp X position within the progress bar bounds
+    var x = Math.max(0, Math.min(clientX - rect.left, rect.width))
+    var ratio = x / rect.width              // 0.0 to 1.0
+    audio.currentTime = ratio * (audio.duration || 0) // seek audio
+    updateProgressBar(ratio)                 // update bar visually
+    syncLyrics(audio.currentTime)            // instantly resync lyrics
+}
 
+// Set the progress bar fill width and thumb position
+function updateProgressBar(ratio) {
+    var pct = (ratio * 100).toFixed(2) + '%'
+    progressFill.style.width = pct           // fill width
+    progressThumb.style.left = pct           // thumb position
+}
+
+// --- Mouse events for desktop ---
+progressContainer.addEventListener('mousedown', function (e) {
+    isDragging = true                        // enter drag mode
+    progressContainer.classList.add('dragging') // show thumb via CSS
+    seekToPosition(e.clientX)                // seek to click position
+})
+document.addEventListener('mousemove', function (e) {
+    if (isDragging) seekToPosition(e.clientX) // update while dragging
+})
+document.addEventListener('mouseup', function () {
+    if (isDragging) {
+        isDragging = false                     // exit drag mode
+        progressContainer.classList.remove('dragging')
+    }
+})
+
+// --- Touch events for mobile ---
+progressContainer.addEventListener('touchstart', function (e) {
+    isDragging = true
+    progressContainer.classList.add('dragging')
+    seekToPosition(e.touches[0].clientX)
+}, { passive: true })                      // passive for scroll performance
+document.addEventListener('touchmove', function (e) {
+    if (isDragging) seekToPosition(e.touches[0].clientX)
+}, { passive: true })
+document.addEventListener('touchend', function () {
+    if (isDragging) {
+        isDragging = false
+        progressContainer.classList.remove('dragging')
+    }
+})
+
+/* === RESET ON AUDIO END ===
+   Clears all highlighting when the track finishes. */
+audio.addEventListener('ended', function () {
+    activeWordIdx = -1                       // reset word tracker
+    activeLineIdx = -1                       // reset line tracker
+    // Remove all word highlight classes
+    wordElements.forEach(function (el) {
+        el.classList.remove('active', 'sung')
+    })
+    // Mark all lines as past (fully sung)
+    lyricsPanel.querySelectorAll('.lyric-line').forEach(function (el) {
+        el.classList.remove('active')
+        el.classList.add('past')
+    })
+})
+
+/* === UTILITY: Format seconds to M:SS display string === */
 function formatTime(seconds) {
-  if (isNaN(seconds)) return "0:00";
-  var m = Math.floor(seconds / 60);
-  var s = Math.floor(seconds % 60);
-  return m + ":" + (s < 10 ? "0" : "") + s;
+    if (isNaN(seconds)) return '0:00'        // guard against NaN
+    var m = Math.floor(seconds / 60)         // whole minutes
+    var s = Math.floor(seconds % 60)         // remaining seconds
+    return m + ':' + (s < 10 ? '0' : '') + s // pad seconds with leading zero
 }
 
-/* --- 13. INIT ---
-   Parse the lyric data first, then render it into the page. */
-renderLyrics(parseLRC(LRC_DATA));
+/* === INITIALIZATION ===
+   Parse LRC data and render lyrics on page load. */
+function init() {
+    lyricsData = parseLRC(LRC_DATA)          // parse embedded LRC string
+    renderLyrics(lyricsData)                 // build DOM elements
+}
+
+init() // execute on script load

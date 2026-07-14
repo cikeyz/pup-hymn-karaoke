@@ -1,408 +1,466 @@
-
-
+/* --- Design Tokens (CSS Custom Properties) --- */
 :root {
-    --topbar-h: 64px;
-    --controls-h: 72px;
-    --font-header: "Montserrat", serif;
-    --font-display: "Montserrat", system-ui, sans-serif;
-    /* Main PUP brand color */
+    --bg-deep: #0a0a0a;
+    /* deepest background layer */
+    --bg-primary: #121212;
+    /* main background (Spotify dark) */
+    --bg-surface: #181818;
+    /* card/surface background */
+    --bg-elevated: #282828;
+    /* elevated elements like progress track */
+    --text-primary: #ffffff;
+    /* primary text color */
+    --text-secondary: #b3b3b3;
+    /* secondary/muted text */
+    --text-dim: #535353;
+    /* dimmed/inactive text */
     --maroon: #800000;
-    --maroon-light: #a00000;
-    
-    --word-active: #b91c1c;
-    --word-sung: #d4a0a0;
-    /* Light theme colors */
-    --bg-primary: #fafafa;
-    --bg-surface: #f3f3f3;
-    --bg-elevated: #d9d9d9;
-    --bg-card: #e8e8e8;
-    --text-primary: #111111;
-    --text-secondary: #3d3d3d;
-    --text-dim: #777777;
-    --divider: rgba(0, 0, 0, 0.12);
-    --controls-bg: #e8e8e8;
-    --scrollbar-track: #d0d0d0;
+    /* PUP brand maroon */
+    --maroon-light: #a31d1d;
+    /* lighter maroon for gradients */
+    --gold: #d4a745;
+    /* gold accent for active word */
+    --gold-glow: rgba(212, 167, 69, 0.35);
+    /* gold glow shadow */
+    --font-display: 'Outfit', system-ui, sans-serif;
+    /* headings */
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    /* body text */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    /* smooth deceleration */
 }
 
+/* --- Reset & Base --- */
 *,
 *::before,
 *::after {
     margin: 0;
+    /* strip all default margins */
     padding: 0;
+    /* strip all default padding */
     box-sizing: border-box;
+    /* include padding in width calculations */
 }
 
 html,
 body {
     height: 100%;
+    /* full viewport height */
     overflow: hidden;
+    /* prevent body scroll; lyrics panel scrolls instead */
 }
 
 body {
-    font-family: var(--font-display);
+    font-family: var(--font-body);
+    /* DM Sans as base font */
     background: var(--bg-primary);
+    /* dark background */
     color: var(--text-primary);
+    /* white text */
     -webkit-font-smoothing: antialiased;
+    /* smoother font rendering on macOS/iOS */
+    -moz-osx-font-smoothing: grayscale;
+    /* smoother font rendering on Firefox */
 }
 
-.topbar {
-    height: var(--topbar-h);
+/* --- Marquee Branding Bar --- */
+.marquee-bar {
     background: var(--maroon);
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-}
-
-.topbar-brand {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-/* Fixed logo size so it stays neat, plus a small shadow for depth */
-.topbar-logo {
-    width: 40px;
-    height: 40px;
-    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
-}
-
-.topbar-text {
-    display: flex;
-    flex-direction: column;
-}
-
-/* Uppercase heading to get closer to the PUP website look */
-.topbar-title {
-    font-family: var(--font-header);
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #ffffff;
-    text-transform: uppercase;
-    line-height: 1.2;
-}
-
-/* Smaller tagline below the main school name */
-.topbar-sub {
-    font-family: var(--font-header);
-    font-size: 0.62rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.75);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-top: 1px;
-}
-
-.player {
-    display: grid;
-    grid-template-columns: 380px 1fr;
-    height: calc(100% - var(--topbar-h) - var(--controls-h));
-}
-
-.sidebar {
-    background: var(--bg-surface);
-    border-right: 1px solid var(--divider);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px 20px;
-    text-align: center;
-    overflow-y: auto;
-}
-
-/* Square image holder with rounded corners and a stronger shadow */
-.album-art {
-    width: 240px;
-    height: 240px;
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow:
-        0 8px 28px rgba(0, 0, 0, 0.45),
-        0 2px 8px rgba(128, 0, 0, 0.2);
-    margin-bottom: 16px;
-    margin-top: 30px;
-    flex-shrink: 0;
-}
-
-/* cover keeps the image filling the box without squishing it */
-.album-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-/* Main song title styling */
-.song-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 2px;
-}
-
-/* Secondary text for the subtitle line */
-.song-artist {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-bottom: 12px;
-}
-
-/* --- Hymn Info Card ---
-   Simple card wrapper for the extra hymn details */
-.hymn-info {
-    width: 100%;
-    background: var(--bg-card);
-    border-radius: 8px;
-    padding: 14px 16px;
-    text-align: left;
-}
-
-/* Card heading stands out with maroon text and a divider */
-.info-heading {
-    font-size: 0.95rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--maroon);
-    margin-bottom: 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--divider);
-}
-
-/* Each info row stacks the label and its values */
-.info-row {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
+    /* PUP maroon background */
     padding: 6px 0;
-}
-
-/* Adds a divider only when another row comes after the previous one */
-.info-row + .info-row {
-    border-top: 1px solid var(--divider);
-}
-
-/* Small label style so the actual values stay more noticeable */
-.info-label {
-    font-size: 0.62rem;
+    /* vertical breathing room */
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    /* small ticker text */
+    color: rgba(255, 255, 255, 0.85);
+    /* slightly transparent white */
+    letter-spacing: 0.5px;
+    /* subtle letter spacing */
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-dim);
-    font-weight: 500;
+    /* all caps for ticker effect */
 }
 
-/* Main value text for each info item */
-.info-value {
-    font-size: 1rem;
+/* --- Main Player Layout --- */
+.player {
+    display: flex;
+    /* flex column layout */
+    flex-direction: column;
+    /* stack children vertically */
+    height: calc(100% - 28px);
+    /* full height minus marquee bar */
+    max-width: 680px;
+    /* constrain width for readability */
+    margin: 0 auto;
+    /* center horizontally */
+    padding: 0 24px;
+    /* side padding */
+}
+
+/* --- Header Section --- */
+.header {
+    text-align: center;
+    /* center all header content */
+    padding: 28px 0 12px;
+    /* spacing above and below */
+    flex-shrink: 0;
+    /* prevent header from shrinking */
+}
+
+.logo {
+    width: 68px;
+    /* logo size */
+    height: 68px;
+    margin-bottom: 10px;
+    /* gap below logo */
+    filter: drop-shadow(0 2px 8px rgba(128, 0, 0, 0.3));
+    /* maroon shadow */
+}
+
+.title {
+    font-family: var(--font-display);
+    /* Outfit for headings */
+    font-size: 1.1rem;
+    /* controlled heading size */
+    font-weight: 600;
+    /* semi-bold weight */
     color: var(--text-primary);
-    line-height: 1.4;
+    letter-spacing: -0.02em;
+    /* tighter tracking for display */
+    margin-bottom: 4px;
 }
 
+.subtitle {
+    font-size: 0.82rem;
+    /* smaller subtitle */
+    color: var(--text-secondary);
+    /* muted color */
+    font-weight: 400;
+}
+
+/* --- Lyrics Panel (Scrollable) --- */
 .lyrics-panel {
+    flex: 1;
+    /* fill remaining vertical space */
     overflow-y: auto;
-    overflow-x: hidden;
-    padding: 24px 48px;
+    /* enable vertical scrolling */
+    padding: 20px 0;
+    scroll-behavior: smooth;
+    /* smooth native scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* momentum scroll on iOS */
     position: relative;
 }
 
-/* Custom scrollbar styling for browsers that support the WebKit version */
+/* Thin custom scrollbar */
 .lyrics-panel::-webkit-scrollbar {
-    width: 10px;
+    width: 3px;
+    /* narrow scrollbar */
 }
 
 .lyrics-panel::-webkit-scrollbar-track {
-    background: var(--scrollbar-track);
+    background: transparent;
+    /* invisible track */
 }
 
 .lyrics-panel::-webkit-scrollbar-thumb {
     background: var(--maroon);
-    border-radius: 5px;
-    border: 2px solid var(--scrollbar-track);
+    /* maroon thumb */
+    border-radius: 2px;
 }
 
-.lyrics-panel::-webkit-scrollbar-thumb:hover {
-    background: var(--maroon-light);
-}
-
-/* Placeholder text before the actual lyrics are shown */
+/* Placeholder shown before playback */
 .lyrics-placeholder {
     text-align: center;
     color: var(--text-dim);
     font-size: 1rem;
-    padding-top: 40%;
+    padding-top: 35%;
+    /* push down to vertical center */
     font-style: italic;
 }
 
+/* Spacers allow first/last lyric line to scroll to vertical center */
 .lyrics-spacer {
-    height: 25vh;
+    height: 38vh;
+    /* ~38% viewport height spacer */
+    flex-shrink: 0;
 }
 
+/* --- Lyric Line --- */
 .lyric-line {
-    text-align: left;
-    padding: 10px 0;
-    font-size: 2rem;
+    text-align: center;
+    /* center lyrics horizontally */
+    padding: 8px 4px;
+    /* breathing room between lines */
+    font-family: var(--font-display);
+    /* Outfit for lyric display */
+    font-size: 1.6rem;
+    /* large readable lyrics */
     font-weight: 700;
-    letter-spacing: -0.02em;
+    /* bold for karaoke visibility */
     color: var(--text-primary);
-    opacity: 0.3;
+    opacity: 0.4;
+    /* inactive lines are dim */
     transition:
-        opacity 0.2s ease-out,
-        transform 0.2s ease-out;
-    line-height: 1.4;
+        opacity 0.4s var(--ease-out),
+        /* smooth opacity changes */
+        transform 0.4s var(--ease-out);
+    /* smooth scale changes */
+    line-height: 1.45;
     cursor: pointer;
+    /* indicate clickability */
     user-select: none;
-    transform-origin: left center;
+    /* prevent text selection during interaction */
 }
 
-/* Active line gets full opacity and the zoom effect */
+/* Active line: full brightness with subtle scale */
 .lyric-line.active {
     opacity: 1;
-    transform: scale(1.18);
+    /* fully visible */
+    transform: scale(1.02);
+    /* slight enlargement */
 }
 
-/* Past lines stay visible so the sung word colors can still be seen */
+/* Past (already sung) lines: very dim */
 .lyric-line.past {
-    opacity: 1;
+    opacity: 0.2;
 }
 
-/* Instrumental lines look lighter and more separate from the regular lyrics */
-.lyric-line.instrumental {
-    font-style: italic;
-    font-weight: 400;
-    color: var(--text-dim);
-    letter-spacing: -0.02em;
-    opacity: 0.3;
-}
-
-.lyric-line.instrumental.past {
-    opacity: 0.15;
-}
-
+/* --- Individual Word Span --- */
 .word {
     display: inline-block;
-    padding: 2px 4px;
+    /* inline-block for transform support */
+    padding: 2px 3px;
+    /* small padding around each word */
     border-radius: 4px;
+    /* rounded corners for highlight pill */
+    transition:
+        color 0.3s var(--ease-out),
+        /* smooth color transition */
+        background-color 0.3s var(--ease-out),
+        transform 0.3s var(--ease-out),
+        /* smooth scale */
+        text-shadow 0.3s var(--ease-out);
+    /* smooth glow */
     cursor: pointer;
+    /* clickable words */
 }
 
-/* Hover underline helps show that the words are clickable */
+/* Hover: subtle underline to hint clickability */
 .word:hover {
     text-decoration-line: underline;
     text-decoration-color: var(--text-dim);
     text-underline-offset: 4px;
 }
 
-/* Current word being sung */
+/* Active word: gold highlight with glow and scale */
 .word.active {
-    color: var(--word-active);
+    color: var(--gold);
+    /* gold text for active word */
+    text-shadow: 0 0 18px var(--gold-glow);
+    /* golden glow effect */
+    transform: scale(1.12);
+    /* scale up for emphasis */
 }
 
-/* Words that already passed get a softer color */
+/* Sung words: same gold but without glow/scale (trail effect) */
 .word.sung {
-    color: var(--word-sung);
+    color: var(--gold);
+    /* gold to show "already sung" */
 }
 
-.controls-bar {
-    height: var(--controls-h);
-    background: var(--controls-bg);
-    border-top: 1px solid var(--divider);
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-    gap: 14px;
-}
-
-/* Side control buttons keep a lighter ghost-button look */
-.control-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 2rem;
-    cursor: pointer;
-    transition:
-        color 0.2s ease,
-        transform 0.1s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* --- Controls Bar --- */
+.controls {
     flex-shrink: 0;
+    /* prevent controls from shrinking */
+    padding: 12px 0 22px;
+    /* spacing around controls */
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    /* space between button and progress */
 }
 
-.control-btn:hover {
-    color: var(--text-primary);
-}
-
-.control-btn:active {
-    transform: scale(0.9);
-}
-
-/* Main play button is circular so it stands out more than the side controls */
+/* --- Play/Pause Button --- */
 .play-btn {
     width: 40px;
+    /* circular button size */
     height: 40px;
     border-radius: 50%;
+    /* perfect circle */
     border: none;
     background: var(--text-primary);
+    /* white button */
     color: var(--bg-primary);
+    /* dark icon color */
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: transform 0.15s ease-out;
+    /* prevent shrinking */
+    transition:
+        transform 0.15s var(--ease-out),
+        background-color 0.15s;
 }
 
+/* Hover: slight scale up */
 .play-btn:hover {
     transform: scale(1.06);
 }
 
+/* Active press: scale down for tactile feedback */
 .play-btn:active {
     transform: scale(0.95);
 }
 
-.play-btn i {
-    font-size: 16px;
+/* SVG icon sizing inside button */
+.play-btn svg {
+    width: 16px;
+    height: 16px;
 }
 
-/* Small nudge so the play triangle looks centered by eye */
+/* Offset play triangle slightly right for optical centering */
 .icon-play {
     margin-left: 2px;
 }
 
-/* This section stretches to use the remaining horizontal space */
+/* --- Progress Bar Wrapper --- */
 .progress-wrapper {
     flex: 1;
+    /* fill remaining width */
     display: flex;
     align-items: center;
     gap: 10px;
+    /* space between time labels and bar */
 }
 
-/* Tabular numbers stop the time labels from jumping around in width */
+/* Time labels (current and total) */
 .time-label {
-    font-size: 1rem;
-    color: var(--text-dim);
+    font-size: 0.68rem;
+    /* small time display */
+    color: var(--text-secondary);
     font-variant-numeric: tabular-nums;
+    /* fixed-width digits for stability */
     min-width: 30px;
+    /* prevent layout shift */
+    font-family: var(--font-body);
 }
 
+/* Right-align the total time label */
 #timeTotal {
     text-align: right;
 }
 
-/* Seek bar track */
+/* --- Seekable Progress Bar --- */
 .progress-container {
     flex: 1;
-    height: 8px;
+    /* fill available space */
+    height: 4px;
+    /* thin bar */
     background: var(--bg-elevated);
-    border-radius: 3px;
+    /* dark track */
+    border-radius: 2px;
+    position: relative;
+    /* anchor for fill and thumb */
     cursor: pointer;
+    transition: height 0.15s var(--ease-out);
+    /* grow on hover */
 }
 
-/* Filled part of the seek bar */
+/* Expand bar height on hover for easier targeting */
+.progress-container:hover {
+    height: 6px;
+}
+
+/* Filled portion of progress bar */
 .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--maroon), var(--maroon-light));
-    border-radius: 3px;
+    /* maroon gradient */
+    border-radius: 2px;
     width: 0%;
+    /* updated by JavaScript */
     pointer-events: none;
+    /* clicks pass through to container */
+}
+
+/* Draggable thumb circle */
+.progress-thumb {
+    position: absolute;
+    top: 50%;
+    /* vertically centered */
+    left: 0%;
+    /* updated by JavaScript */
+    width: 12px;
+    height: 12px;
+    background: var(--text-primary);
+    /* white thumb */
+    border-radius: 50%;
+    /* perfect circle */
+    transform: translate(-50%, -50%) scale(0);
+    /* hidden by default */
+    transition: transform 0.15s var(--ease-out);
+    pointer-events: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    /* subtle depth shadow */
+}
+
+/* Show thumb on hover or during drag */
+.progress-container:hover .progress-thumb,
+.progress-container.dragging .progress-thumb {
+    transform: translate(-50%, -50%) scale(1);
+    /* reveal thumb */
+}
+
+/* --- Staggered Load Animation for Lyric Lines --- */
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        /* start invisible */
+        transform: translateY(14px);
+        /* start shifted down */
+    }
+
+    to {
+        opacity: 0.4;
+        /* end at default dim opacity */
+        transform: translateY(0);
+        /* end at natural position */
+    }
+}
+
+/* Applied by JavaScript with per-line animation-delay */
+.lyric-line.loaded {
+    animation: fadeSlideUp 0.5s var(--ease-out) both;
+    /* both = fill forwards + backwards */
+}
+
+/* --- Responsive Adjustments for Small Screens --- */
+@media (max-width: 480px) {
+    .title {
+        font-size: 0.92rem;
+    }
+
+    /* smaller heading on mobile */
+    .lyric-line {
+        font-size: 1.25rem;
+    }
+
+    /* slightly smaller lyrics */
+    .logo {
+        width: 52px;
+        height: 52px;
+    }
+
+    /* smaller logo */
+    .header {
+        padding: 18px 0 10px;
+    }
+
+    /* tighter header spacing */
+    .player {
+        padding: 0 16px;
+    }
+
+    /* narrower side padding */
 }
