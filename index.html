@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <!-- Keeping UTF-8 here so Filipino characters and symbols show up properly -->
+        
         <meta charset="UTF-8" />
 
         <!-- Standard responsive viewport so the layout behaves on phones too -->
@@ -29,9 +29,7 @@
     </head>
 
     <body>
-        <!-- ----- TOP HEADER BAR -----
-       This is the maroon header strip with the PUP branding.
-       It stays at the top so the page keeps that app-like layout. -->
+        
         <header class="topbar">
             <!-- Left side holds the logo and the school name -->
             <div class="topbar-brand">
@@ -57,12 +55,9 @@
         <!-- ----- MAIN PLAYER AREA -----
          Main split layout: sidebar on the left, lyrics area on the right. -->
         <main class="player">
-            <!-- ----- LEFT SIDEBAR -----
-         This side shows the cover image, song details, and hymn info card.
-         Flexbox keeps the content centered nicely. -->
+            
             <aside class="sidebar">
-                <!-- Album area uses the PUP Pylon image.
-           object-fit: cover helps it fill the box without looking stretched -->
+                
                 <div class="album-art">
                     <img
                         src="Assets/PUP-Pylon.jpg"
@@ -95,20 +90,15 @@
                 </div>
             </aside>
 
-            <!-- ----- RIGHT LYRICS PANEL -----
-         The lyrics get inserted here by script.js.
-         Until playback starts, this just shows the placeholder text. -->
+            
             <section class="lyrics-panel" id="lyricsPanel">
                 <p class="lyrics-placeholder">Press play to begin</p>
             </section>
         </main>
 
-        <!-- ----- BOTTOM CONTROLS BAR -----
-       Bottom area for the audio element, playback buttons,
-       and the progress bar with time labels. -->
+        
         <div class="controls-bar">
-            <!-- Audio element for the hymn track.
-         preload="metadata" gets the duration first without loading everything early -->
+            
             <audio
                 id="audio"
                 src="Assets/PUP-Hymn.mp3"
@@ -160,8 +150,7 @@
                 <!-- Current playback time updates while the song is running -->
                 <span class="time-label" id="timeCurrent">00:00</span>
 
-                <!-- Click anywhere on this bar to seek.
-           The fill inside it grows based on how much of the song has played. -->
+                
                 <div class="progress-container" id="progressContainer">
                     <div class="progress-fill" id="progressFill"></div>
                 </div>

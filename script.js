@@ -1,11 +1,4 @@
-/* --- 1. LRC DATA (the lyrics + timestamps) ---
-   This uses an LRC-style format where the whole line has a timestamp
-   and each word can also have its own timestamp inside angle brackets.
-   That is what makes the per-word karaoke highlighting possible.
 
-   I kept the lyrics directly in this file as a template literal instead of
-   loading them from another file. That avoids file:// CORS issues when
-   opening index.html directly without running a local server. */
 
 const LRC_DATA = `[00:00.00]<00:00.00>♪ Instrumental ♪
 [00:12.67]<00:12.67>Sintang <00:13.73>Paaralan
@@ -26,9 +19,6 @@ const LRC_DATA = `[00:00.00]<00:00.00>♪ Instrumental ♪
 [01:29.23]<01:29.23>Paaralang <01:32.18>dakila
 [01:34.90]<01:34.90>PUP, <01:37.85>pinagpala`;
 
-/* --- 2. DOM REFERENCES ---
-   I grab these elements once at the start so the script can reuse them
-   instead of repeatedly calling getElementById later on. */
 const audio = document.getElementById("audio");
 const playBtn = document.getElementById("playBtn");
 const rewindBtn = document.getElementById("rewind-btn");
@@ -41,9 +31,6 @@ const progressFill = document.getElementById("progressFill");
 const timeCurrent = document.getElementById("timeCurrent");
 const timeTotal = document.getElementById("timeTotal");
 
-/* --- 3. STATE ---
-   These variables keep track of the current playback and lyric state.
-   I used `var` here for simpler ES5-style compatibility in this project. */
 var allWords = []; // Flat array of every word: [{text, time, lineIdx}, ...]
 var wordElements = []; // Parallel array of <span> DOM elements for each word
 var activeWordIdx = -1; // Index of the currently highlighted word (-1 = none)
@@ -88,15 +75,6 @@ function parseLRC(text) {
   return result;
 }
 
-/* --- 5. RENDER LYRICS ---
-   This builds the lyric elements inside the lyrics panel.
-   Each line becomes a <div class="lyric-line"> and each word gets its own span.
-
-   The spacer divs at the top and bottom give enough room for the first and
-   last lines to still scroll into the middle of the panel.
-
-   Every word is also clickable, so clicking it jumps the audio to that word
-   and starts playback from there. */
 function renderLyrics(data) {
   lyricsPanel.innerHTML = "";
   allWords = [];
@@ -152,13 +130,6 @@ function scrollToLine(lineEl) {
   lyricsPanel.scrollTo({ top: targetScroll, behavior: "smooth" });
 }
 
-/* --- 7. PAUSE AUTO-SCROLL ON MANUAL SCROLL ---
-   If the user scrolls the lyrics panel on purpose, auto-centering pauses
-   for 4 seconds first. That way the panel does not snap back immediately
-   while the user is trying to read ahead or look around.
-
-   { passive: true } tells the browser this listener will not block scrolling,
-   which helps keep scrolling smoother. */
 function handleUserScroll() {
   isUserScrolling = true;
   if (scrollResumeTimer) clearTimeout(scrollResumeTimer);
@@ -176,24 +147,6 @@ lyricsPanel.addEventListener(
   { passive: true },
 );
 
-/* --- 8. SYNC LYRICS ---
-   This is the main syncing part. It runs during timeupdate events and also
-   after manual seeks, then decides which word and line should look active.
-
-   Basic flow:
-   1. Scan backward through allWords to find the latest word at or before currentTime
-   2. Stop early if that word is already active
-   3. Clear old classes, update line states, and mark past words as sung
-   4. Highlight the new active word
-
-   Line states:
-   - .active = current line being sung
-   - .past = already finished
-   - default = upcoming and still dimmed
-
-   Word states:
-   - .active = current word
-   - .sung = already passed word */
 function syncLyrics(currentTime) {
   var newIdx = -1;
   for (var i = allWords.length - 1; i >= 0; i--) {
@@ -234,13 +187,6 @@ function syncLyrics(currentTime) {
   activeWordIdx = newIdx;
 }
 
-/* --- 9. PLAYBACK CONTROLS ---
-   These handlers cover play/pause plus the 5-second rewind/forward buttons.
-   Rewind and forward are clamped so the current time stays inside the track.
-
-   The icon swap listens to the audio events themselves.
-   That is a bit safer than only checking audio.paused from the button click
-   because other actions can also trigger play or pause. */
 playBtn.addEventListener("click", function () {
   if (audio.paused) audio.play();
   else audio.pause();
@@ -262,16 +208,6 @@ audio.addEventListener("pause", function () {
   iconPause.style.display = "none";
 });
 
-/* --- 10. TIMEUPDATE, METADATA & PROGRESS ---
-   timeupdate runs a few times per second while the audio plays.
-   Each run updates the progress width, syncs the lyrics, and refreshes
-   the current time label.
-
-   loadedmetadata runs once the browser already knows the track duration,
-   so that is where the total time label gets filled in.
-
-   Clicking the progress bar converts the click position into a ratio,
-   then seeks the audio to that matching part of the song. */
 audio.addEventListener("timeupdate", function () {
   progressFill.style.width =
     ((audio.currentTime / (audio.duration || 1)) * 100).toFixed(2) + "%";
@@ -291,10 +227,6 @@ progressContainer.addEventListener("click", function (e) {
   syncLyrics(audio.currentTime);
 });
 
-/* --- 11. SONG ENDED ---
-   Once the song finishes, everything gets marked as completed.
-   This keeps the finished look on screen instead of leaving the last
-   word stuck in the active state. */
 audio.addEventListener("ended", function () {
   activeWordIdx = -1;
   activeLineIdx = -1;
@@ -308,9 +240,6 @@ audio.addEventListener("ended", function () {
   });
 });
 
-/* --- 12. FORMAT TIME ---
-   Converts raw seconds like 83.5 into a friendlier M:SS format like 1:23.
-   It returns 0:00 for NaN, which can happen before the audio metadata is ready. */
 function formatTime(seconds) {
   if (isNaN(seconds)) return "0:00";
   var m = Math.floor(seconds / 60);

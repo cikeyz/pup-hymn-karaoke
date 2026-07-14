@@ -1,64 +1,113 @@
 # PUP Hymn Karaoke
 
-Browser karaoke for the Polytechnic University of the Philippines school hymn (*Imno ng PUP*). Vanilla HTML, CSS, and JavaScript. Word-level LRC sync, click-to-seek, and PUP maroon branding.
+<p align="center">
+  <strong>Browser karaoke for the PUP school hymn with word-level LRC sync.</strong><br>
+  Vanilla HTML, CSS, and JavaScript. No build step.
+</p>
+
+<p align="center">
+  <a href="https://cikeyz.github.io/pup-hymn-karaoke/">Live Demo</a>
+  &nbsp;·&nbsp;
+  <a href="#quick-start">Quick Start</a>
+  &nbsp;·&nbsp;
+  <a href="#project-structure">Structure</a>
+  &nbsp;·&nbsp;
+  <a href="#license">License</a>
+</p>
+
+<p align="center">
+  <img alt="HTML5" src="https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white">
+  <img alt="CSS3" src="https://img.shields.io/badge/CSS3-1572B6?logo=css&logoColor=white">
+  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=111111">
+  <img alt="License MIT" src="https://img.shields.io/badge/License-MIT-22c55e?logo=open-source-initiative&logoColor=white">
+  <img alt="GitHub Pages" src="https://img.shields.io/badge/Demo-GitHub%20Pages-222222?logo=github&logoColor=white">
+</p>
+
+## Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Screenshots](#screenshots)
+- [Quick Start](#quick-start)
+- [Project Structure](#project-structure)
+- [Design Notes](#design-notes)
+- [Other Design Eras](#other-design-eras)
+- [License](#license)
+- [Course Note](#course-note)
+
+## Overview
+
+PUP Hymn Karaoke is a single-page player for *Imno ng PUP*. It parses word-level LRC timestamps, highlights the active word, auto-scrolls the lyric panel, and supports click-to-seek plus transport controls. Open `index.html` locally or use the GitHub Pages demo.
 
 ## Features
 
 | Feature | Description |
 |---------|-------------|
-| Word-level sync | Each word highlights as the hymn plays |
-| Click-to-seek | Click a word to jump to that timestamp |
-| Auto-scroll | Active line stays in view |
-| Transport | Play/pause, +/- seek, progress bar |
-| Offline friendly | Open `index.html` with no build step |
+| Word-level sync | Highlights each word from LRC timestamps as audio plays |
+| Click-to-seek | Jump to any word by clicking it |
+| Auto-scroll | Keeps the active line in view during playback |
+| Transport | Play/pause, skip, and a seekable progress bar |
+| Offline friendly | Static files only; no bundler or backend |
 
-## Quick start
+## Screenshots
+
+| Player |
+|--------|
+| ![PUP Hymn Karaoke player](docs/screenshots/player.png) |
+
+## Quick Start
 
 ```bash
-# Option 1: open index.html in a browser
+git clone https://github.com/cikeyz/pup-hymn-karaoke.git
+cd pup-hymn-karaoke
 
-# Option 2: local server (avoids some file:// quirks)
+# Option A: open index.html in a browser
+
+# Option B: local static server
 python -m http.server 8000
-# then visit http://localhost:8000
+# http://localhost:8000
 ```
 
-## Project structure
+## Project Structure
 
 ```text
 pup-hymn-karaoke/
-  index.html
-  script.js          # LRC parse, sync, controls
-  style.css
-  assets/
-    PUP-Hymn.lrc
-    PUP-Hymn.mp3
-    PUP-Logo.svg
-    PUP-Pylon.jpg
+├── index.html
+├── script.js
+├── style.css
+├── LICENSE
+├── README.md
+├── assets/
+│   ├── PUP-Hymn.lrc
+│   ├── PUP-Hymn.mp3
+│   ├── PUP-Logo.svg
+│   └── PUP-Pylon.jpg
+└── docs/
+    └── screenshots/
+        └── player.png
 ```
 
-## Design
+## Design Notes
 
-- Maroon primary (`#800000`) aligned with PUP brand colors
+- Maroon primary aligned with PUP brand colors (`#800000`)
 - Montserrat for UI type
-- Split layout: album/sidebar info + scrolling lyrics
+- Split layout: track/sidebar info + scrolling lyrics
 
-## Other design eras
+## Other Design Eras
 
-Earlier UI experiments live on long-lived branches (not merged into `main`):
+Earlier UI experiments stay on long-lived branches (not merged into `main`):
 
-| Branch | Look |
-|--------|------|
+| Branch | Description |
+|--------|-------------|
 | `overhaul/dark-spotify-shell` | Dark app shell with now-playing sidebar |
-| `overhaul/centered-dark-player` | Centered dark player + marquee bar |
-
-`main` is the light institutional player.
+| `overhaul/centered-dark-player` | Centered dark player with marquee bar |
 
 ## License
 
 MIT. See [LICENSE](LICENSE).
 
-The PUP Hymn audio, university name, and logos belong to the Polytechnic University of the Philippines. Code is MIT; media and marks are not free for commercial reuse.
+The PUP Hymn audio, university name, and logos belong to the Polytechnic University of the Philippines. Source code is MIT; media and marks are not free for commercial reuse.
 
-## Course note
+## Course Note
 
 Built for CMPE 364 (Web and Mobile Systems), Polytechnic University of the Philippines, under Engr. Arlene B. Canlas. Published here as a standalone project.
